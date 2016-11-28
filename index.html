@@ -9,37 +9,34 @@
 	
 </head>
 <body>
-	<div class="wrapper">
-		
-		<header>
-			<h1>Real Time Visualizer</h1>
-		</header>
+<!--
+	<header>
+		<h1>Real Time Visualizer</h1>
+	</header>
+-->
+	<canvas class="visualizer" width="640" height="256"></canvas> 
 
-		<canvas class="visualizer" width="640" height="256"></canvas> 
-
-		<form class="controls">
-			<div>
-				<select id="input">
-					<option value="time">Time</option>
-					<option value="frequency" selected>Frequency</option>
-					<option value="off">Off</option>
-				</select>
-				<select id="timeType" style="display:none">
-					<option value="simple">Simple</option>
-					<option value="amplitude">Amplitude</option>
-					<option value="simpleWithAmplitude">Simple + Amplitude</option>
-					<option value="simpleWithAmplitudeAndFrequency">Simple + Amplitude + Frequency</option>
-					<option value="keyboard" disabled>Keyboard</option>
-				</select>
-				<select id="freqType">
-					<option value="simple">Simple</option>
-				</select>
-	<div id="curFreq"></div>
-			</div>
-		</form>
-
-
-	</div>
+	<form class="controls">
+		<div>
+			<select id="input">
+				<option value="time">Time</option>
+				<option value="frequency" selected>Frequency</option>
+				<option value="off">Off</option>
+			</select>
+			<select id="timeType" style="display:none">
+				<option value="simple">Simple</option>
+				<option value="amplitude">Amplitude</option>
+				<option value="simpleWithAmplitude">Simple + Amplitude</option>
+				<option value="simpleWithAmplitudeAndFrequency">Simple + Amplitude + Frequency</option>
+				<option value="keyboard" disabled>Keyboard</option>
+			</select>
+			<select id="freqType">
+				<option value="simple">Simple</option>
+			</select>
+			<input type="checkbox" id="calculateNote" checked=false>
+		<div id="curFreq"></div>
+		</div>
+	</form>
 
 	<script src="frequencyMap.js"></script>
 	<script src="visualizer.js"></script>

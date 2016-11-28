@@ -7,6 +7,7 @@ vis.start()
 let inputSel = document.querySelector('#input')
 let timeTypeSel = document.querySelector('#timeType')
 let freqTypeSel = document.querySelector('#freqType')
+let calcFreq = document.querySelector('#calculateNote')
 inputSel.onchange = function() {
 	vis.input = this.value
 	if (this.value == 'time') {
@@ -33,11 +34,20 @@ freqTypeSel.onchange = function() {
 	vis.type = this.value
 }
 
+calcFreq.onchange = function() {
+	vis.doEstimateNote = this.checked
+}
+
+//handle resize
+window.addEventListener('resize', function() {
+	vis.setDimensions(window.innerWidth, window.innerHeight - 50)
+})
+
 // Visualizer class
 function Visualizer(canvas) {
 	this.input = 'frequency'
 	this.type = 'simple'
-	let analyser, ctx, WIDTH, HEIGHT, activeFrame
+	let analyser, ctx, activeFrame, dimensionResetTimeout
 	let status = 'stopped'
 	let history = new MovingAverage(20)
 	
@@ -49,6 +59,20 @@ function Visualizer(canvas) {
 	this.start = function() {
 		status = 'running'
 		this.visualize()
+	}
+	
+	// uses timeout to prevent rapid dimensional reset
+	this.setDimensions = function(width, height) {
+		clearTimeout(dimensionResetTimeout)
+		dimensionResetTimeout = setTimeout(function() {
+			this.width = width
+			canvas.width = width
+			if (height) {
+				this.height = height
+				canvas.height = height
+				//canvas.setAttribute('height', height)
+			}
+		}, 100)
 	}
 
 	this.init = function(canvas) {
@@ -63,13 +87,17 @@ function Visualizer(canvas) {
 		analyser = audioCtx.createAnalyser()
 		analyser.minDecibels = -90
 		analyser.maxDecibels = -10
-		analyser.smoothingTimeConstant = 0.85 //0.85
+		analyser.smoothingTimeConstant = 0.85
 
 		// set up canvas context for visualizer
 		ctx = canvas.getContext('2d')
 		
-		// make sure canvas is the correct width
-		canvas.setAttribute('width', canvas.parentNode.clientWidth)
+		this.width = window.innerWidth
+		this.height = window.innerHeight - 50
+		
+		// make sure canvas is the correct width and height
+		canvas.setAttribute('width', this.width)
+		canvas.setAttribute('height', this.height)
 
 		// get user media and begin recording/visualizing
 		navigator.getUserMedia(
@@ -125,21 +153,22 @@ function Visualizer(canvas) {
 		// simple wave form and frequency plots
 		ctx.beginPath()
 		let interval = canvas.width / data.raw.length
+		let hScale = canvas.height / 256
 		ctx.strokeStyle = data.strokeStyle || 'black'
 		data.raw.forEach((item, i) => {
 			if (this.input === 'time') {
 				// plot waveform
 				if (i == 0) {
-					ctx.moveTo(i*interval, item)
+					ctx.moveTo(i*interval, item * hScale)
 				} else {
-					ctx.lineTo(i*interval, item)
+					ctx.lineTo(i*interval, item * hScale)
 				}
 			} else if (this.input == 'frequency') {
 				// plot frequency
 				if (i == 0) {
-					ctx.moveTo(i*interval, 256 - item)
+					ctx.moveTo(i*interval, (256 - item) * hScale)
 				} else {
-					ctx.lineTo(i*interval, 256 - item)	
+					ctx.lineTo(i*interval, (256 - item) * hScale)	
 				}
 			}
 		})
