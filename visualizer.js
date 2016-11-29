@@ -1,23 +1,32 @@
 // initialize
-let canvas = document.querySelector('.visualizer')
-let vis = new Visualizer(canvas)
+const canvas = document.querySelector('.visualizer')
+const vis = new Visualizer(canvas)
 vis.start()
 
-// GUI controls
-let inputSel = document.querySelector('#input')
-let timeTypeSel = document.querySelector('#timeType')
-let freqTypeSel = document.querySelector('#freqType')
-let calcFreq = document.querySelector('#calculateNote')
+// GUI controls --------------------------------------------------------
+const toolbar = document.querySelector('#toolbar')
+const inputSel = document.querySelector('#input')
+const timeTypeSel = document.querySelector('#timeType')
+const freqTypeSel = document.querySelector('#freqType')
+const calcNote = document.querySelector('#calculateNote')
+calcNote.checked = false // initially uncheck this option
+const curFreq = document.querySelector('#curFreq')
+const toggleMenu = document.querySelector('#toggleMenu')
+
 inputSel.onchange = function() {
 	vis.input = this.value
 	if (this.value == 'time') {
 		timeTypeSel.style.display = ''
 		vis.type = timeTypeSel.value
 		freqTypeSel.style.display = 'none'
+		if (calcNote.checked) curFreq.style.display = 'block'
+		calcNote.disabled = false
 	} else if (this.value == 'frequency') {
 		freqTypeSel.style.display = ''
 		vis.type = freqTypeSel.value
 		timeTypeSel.style.display = 'none'
+		curFreq.style.display = 'none'
+		calcNote.disabled = true
 	}
 	if (this.value == 'off') {
 		vis.stop()
@@ -34,16 +43,36 @@ freqTypeSel.onchange = function() {
 	vis.type = this.value
 }
 
-calcFreq.onchange = function() {
+calcNote.onchange = function() {
 	vis.doEstimateNote = this.checked
+	if (!this.checked) {
+		curFreq.style.display = 'none'
+	} else {
+		curFreq.style.display = 'block'
+	}
 }
+
+let menuExpanded = true
+toggleMenu.onclick = function() {
+	menuExpanded = !menuExpanded
+	if (menuExpanded) {
+		toggleMenu.querySelector('i').innerHTML = 'keyboard_arrow_left'
+		toolbar.querySelector('.wrapper').style.display = 'block'
+	} else {
+		toggleMenu.querySelector('i').innerHTML = 'keyboard_arrow_right'
+		toolbar.querySelector('.wrapper').style.display = 'none'
+	}
+}
+
+
+// ---------------------------------------------------------------------
 
 //handle resize
 window.addEventListener('resize', function() {
-	vis.setDimensions(window.innerWidth, window.innerHeight - 50)
+	vis.setDimensions(window.innerWidth, window.innerHeight)
 })
 
-// Visualizer class
+// Visualizer function
 function Visualizer(canvas) {
 	this.input = 'frequency'
 	this.type = 'simple'
@@ -70,7 +99,6 @@ function Visualizer(canvas) {
 			if (height) {
 				this.height = height
 				canvas.height = height
-				//canvas.setAttribute('height', height)
 			}
 		}, 100)
 	}
@@ -93,7 +121,7 @@ function Visualizer(canvas) {
 		ctx = canvas.getContext('2d')
 		
 		this.width = window.innerWidth
-		this.height = window.innerHeight - 50
+		this.height = window.innerHeight
 		
 		// make sure canvas is the correct width and height
 		canvas.setAttribute('width', this.width)
@@ -133,15 +161,13 @@ function Visualizer(canvas) {
 	
 	// Process audio to determine how the visualization should be
 	// adapted based on the current audio input
-	const curFreq = document.querySelector('#curFreq')
-	let recent = [];
 	this.processAudio = function() {
 		let data = new Uint8Array(analyser.frequencyBinCount)
 		let result = {}
 		if (this.input == 'time') {
 			analyser.getByteTimeDomainData(data)
-			// Estimate musical note
-			result.note = this.estimateMusicalNote(data, history)
+			// Calculate frequency and estimate musical note, if this.doEstimateNote is specified
+			result.note = this.analyzeFrequency(data, history)
 		} else if (this.input == 'frequency') {
 			analyser.getByteFrequencyData(data)
 		}
@@ -177,12 +203,42 @@ function Visualizer(canvas) {
 	
 	this.amplitudeVisual = function(data) {
 		//pulsate more brightly when the amplitude of the input is greatest
-		let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+		let gradient
+		if (data.diagonals) {
+			if (data.note.freq > 1600) {
+				gradient = ctx.createLinearGradient(canvas.width, 0, 0, canvas.height)
+			} else if (data.note.freq > 700) {
+				gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+			} else {
+				gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+			}
+		} else if (data.radial) {
+			if (data.triRadial) {
+				let y = canvas.height / 2
+				let r = Math.min(canvas.height, canvas.width) / 2
+				if (data.note.freq > 1600) {
+					let x = 3 / 4 * canvas.width
+					gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
+				} else if (data.note.freq > 700) {
+					let x = 1 / 2 * canvas.width
+					gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
+				} else {
+					let x = 1 / 4 * canvas.width
+					gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
+				}
+			} else {
+				let x = canvas.width / 2
+				let y = canvas.height / 2
+				let r = Math.max(canvas.height, canvas.width) / 2
+				gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
+			}
+		} else {
+			gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+		}
 		let length = data.raw.length
 		data.raw.forEach((item, i) => {
 			let amp = item > 128 ? item - 128 : 128 - item
-			amp *= 2
-			// TODO consider doubling amp to use full color channels
+			amp *= 2 //double amplitude to use full 256 bit color channeld
 			let color = 'rgb('
 			if (data.multiColor) {
 				if (data.note.freq > 1600) {
@@ -213,8 +269,31 @@ function Visualizer(canvas) {
 		data.strokeStyle = 'white'
 		this.simpleVisual(data)
 	}
-
-	this.estimateMusicalNote = function(data, history) {
+	
+	this.diagonalAmplitudeGradientVisual = function(data) {
+		data.diagonals = true
+		data.multiColor = true
+		this.amplitudeVisual(data)
+		//data.strokeStyle = 'white'
+		//this.simpleVisual(data)
+	}
+	
+	this.radialAmplitudeGradientVisual = function(data) {
+		data.radial = true
+		data.multiColor = true
+		this.amplitudeVisual(data)
+		//data.strokeStyle = 'white'
+		//this.simpleVisual('data')
+	}
+	
+	this.triRadialVisual = function(data) {
+		data.radial = true
+		data.triRadial = true
+		data.multiColor = true
+		this.amplitudeVisual(data)
+	}
+	
+	this.analyzeFrequency = function(data, history) {
 		let lastPos = 0
 		let pitchSamples = []
 		let lastItem = 0
@@ -231,21 +310,29 @@ function Visualizer(canvas) {
 		})
 		pitchSamples.shift() //remove first sample because it is often an huge outlier
 		const estimatedFrequency = Util.average(pitchSamples)
-		const estimatedNote = noteName(estimatedFrequency)
-		history.push(estimatedNote)
-		console.log('Est: ' + estimatedNote)
-		const historicMode = history.mode()
-		console.log('Mode of history: ' + historicMode)
-		document.querySelector('#curFreq').innerHTML = 'Estimated note: ' + historicMode
-		
-		return {
-			name: historicMode,
-			freq: estimatedFrequency
+		if (this.doEstimateNote) { //estimate musical note of frequency if specified
+			const estimatedNote = noteName(estimatedFrequency)
+			history.push(estimatedNote)
+			//console.log('Est: ' + estimatedNote)
+			const historicMode = history.mode()
+			//console.log('Mode of history: ' + historicMode)
+			document.querySelector('#curFreq').innerHTML = 'Estimated note: ' + historicMode
+			return {
+				name: historicMode,
+				freq: estimatedFrequency
+			}
+		} else {
+			return {
+				freq: estimatedFrequency
+			}
 		}
 	}
 
 	this.init(canvas)
 }
+
+// Utilities -----------------------------------------------------------
+
 
 // lifo moving average window
 function MovingAverage(maxSize) {
