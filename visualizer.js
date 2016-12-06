@@ -123,7 +123,7 @@ function Visualizer(canvas) {
 	}
 	
 	this.setThreshold = function(lower, upper) {
-		if (upper <= lower) {
+		if (+upper <= +lower) {
 			this.upperThreshold = upper
 			this.lowerThreshold = upper
 		} else {
