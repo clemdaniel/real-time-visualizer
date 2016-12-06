@@ -62,7 +62,12 @@ body {
 }
 
 #toolbar > .wrapper > label {
-	padding: 5px;
+	padding: 4px;
+}
+
+#toolbar > .wrapper > label > input {
+	border: 1px solid #ddd;
+	border-radius: 3px;
 }
 
 #toggleMenu {

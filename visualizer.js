@@ -21,7 +21,6 @@ introAnimation(introDiv)
 
 
 // GUI controls --------------------------------------------------------
-
 const inputSel = document.querySelector('#input')
 const timeTypeSel = document.querySelector('#timeType')
 const freqTypeSel = document.querySelector('#freqType')
@@ -29,6 +28,8 @@ const calcNote = document.querySelector('#calculateNote')
 calcNote.checked = false // initially uncheck this option
 const curFreq = document.querySelector('#curFreq')
 const toggleMenu = document.querySelector('#toggleMenu')
+const upperThreshInput = document.querySelector('#upperFreqThresh')
+const lowerThreshInput = document.querySelector('#lowerFreqThresh')
 
 // set default selected values
 // FIX for Firefox only because of bizarre select option behavior
@@ -74,6 +75,16 @@ calcNote.onchange = function() {
 	}
 }
 
+upperThreshInput.onchange = function() {
+	let result = vis.setThreshold(vis.lowerThreshold, this.value)
+	lowerThreshInput.value = result.lower
+}
+
+lowerThreshInput.onchange = function() {
+	let result = vis.setThreshold(this.value, vis.upperThreshold)
+	this.value = result.lower
+}
+
 let menuExpanded = true
 toggleMenu.onclick = function() {
 	menuExpanded = !menuExpanded
@@ -85,8 +96,6 @@ toggleMenu.onclick = function() {
 		toolbar.querySelector('.wrapper').style.display = 'none'
 	}
 }
-
-
 // ---------------------------------------------------------------------
 
 //handle resize
@@ -98,6 +107,8 @@ window.addEventListener('resize', function() {
 function Visualizer(canvas) {
 	this.input = 'time'
 	this.type = 'triRadial'
+	this.upperThreshold = '1600'
+	this.lowerThreshold = '700'
 	let analyser, ctx, activeFrame, dimensionResetTimeout
 	let status = 'stopped'
 	let history = new MovingAverage(20)
@@ -111,6 +122,20 @@ function Visualizer(canvas) {
 		this.visualize()
 	}
 	
+	this.setThreshold = function(lower, upper) {
+		if (upper <= lower) {
+			this.upperThreshold = upper
+			this.lowerThreshold = upper
+		} else {
+			this.lowerThreshold = lower
+			this.upperThreshold = upper
+		}
+		return {
+			lower: this.lowerThreshold,
+			upper: this.upperThreshold
+		}
+	}
+
 	// uses timeout to prevent rapid dimensional reset
 	this.setDimensions = function(width, height) {
 		clearTimeout(dimensionResetTimeout)
@@ -226,9 +251,9 @@ function Visualizer(canvas) {
 		//pulsate more brightly when the amplitude of the input is greatest
 		let gradient
 		if (data.diagonals) {
-			if (data.note.freq > 1600) {
+			if (data.note.freq > this.upperThreshold) {
 				gradient = ctx.createLinearGradient(canvas.width, 0, 0, canvas.height)
-			} else if (data.note.freq > 700) {
+			} else if (data.note.freq > this.lowerThreshold) {
 				gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
 			} else {
 				gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
@@ -237,10 +262,10 @@ function Visualizer(canvas) {
 			if (data.triRadial) {
 				let y = canvas.height / 2
 				let r = Math.min(canvas.height, canvas.width) / 2
-				if (data.note.freq > 1600) {
+				if (data.note.freq > this.upperThreshold) {
 					let x = 3 / 4 * canvas.width
 					gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
-				} else if (data.note.freq > 700) {
+				} else if (data.note.freq > this.lowerThreshold) {
 					let x = 1 / 2 * canvas.width
 					gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
 				} else {
@@ -254,10 +279,10 @@ function Visualizer(canvas) {
 				gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
 			}
 		} else if (data.triVertical) {
-			if (data.note.freq > 1600) {
+			if (data.note.freq > this.upperThreshold) {
 				let x = 2 / 3 * canvas.width
 				gradient = ctx.createLinearGradient(x, 0, canvas.width, 0)
-			} else if (data.note.freq > 700) {
+			} else if (data.note.freq > this.lowerThreshold) {
 				let x = 1 / 3 * canvas.width
 				gradient = ctx.createLinearGradient(x, 0, 2 * x, 0)
 			} else {
@@ -273,9 +298,9 @@ function Visualizer(canvas) {
 			amp *= 2 //double amplitude to use full 256 bit color channeld
 			let color = 'rgb('
 			if (data.multiColor) {
-				if (data.note.freq > 1600) {
+				if (data.note.freq > this.upperThreshold) {
 					color += '0, 0,' + amp + ')'
-				} else if (data.note.freq > 700) {
+				} else if (data.note.freq > this.lowerThreshold) {
 					color += amp + ',0,' + amp + ')'
 				} else {
 						color += amp + ',0,0)'
