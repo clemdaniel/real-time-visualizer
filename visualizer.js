@@ -82,7 +82,6 @@ function Visualizer(canvas) {
 	
 	this.stop = function() {
 		status = 'stopped'
-		console.log('status: ' + status)
 	}
 
 	this.start = function() {
@@ -232,6 +231,17 @@ function Visualizer(canvas) {
 				let r = Math.max(canvas.height, canvas.width) / 2
 				gradient = ctx.createRadialGradient(x, y, 10, x, y, r)
 			}
+		} else if (data.triVertical) {
+			if (data.note.freq > 1600) {
+				let x = 2 / 3 * canvas.width
+				gradient = ctx.createLinearGradient(x, 0, canvas.width, 0)
+			} else if (data.note.freq > 700) {
+				let x = 1 / 3 * canvas.width
+				gradient = ctx.createLinearGradient(x, 0, 2 * x, 0)
+			} else {
+				let x = 1 / 3 * canvas.width
+				gradient = ctx.createLinearGradient(0, 0, x, 0)
+			}
 		} else {
 			gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
 		}
@@ -269,21 +279,23 @@ function Visualizer(canvas) {
 		data.strokeStyle = 'white'
 		this.simpleVisual(data)
 	}
+
+	this.triVerticalVisual = function(data) {
+		data.multiColor = true
+		data.triVertical = true
+		this.amplitudeVisual(data)
+	}
 	
 	this.diagonalAmplitudeGradientVisual = function(data) {
 		data.diagonals = true
 		data.multiColor = true
 		this.amplitudeVisual(data)
-		//data.strokeStyle = 'white'
-		//this.simpleVisual(data)
 	}
 	
 	this.radialAmplitudeGradientVisual = function(data) {
 		data.radial = true
 		data.multiColor = true
 		this.amplitudeVisual(data)
-		//data.strokeStyle = 'white'
-		//this.simpleVisual('data')
 	}
 	
 	this.triRadialVisual = function(data) {
