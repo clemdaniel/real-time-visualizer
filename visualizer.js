@@ -1,10 +1,10 @@
 // initialize
-const canvas = document.querySelector('.visualizer')
-const toolbar = document.querySelector('#toolbar')
-const vis = new Visualizer(canvas)
+let canvas = document.querySelector('.visualizer')
+let toolbar = document.querySelector('#toolbar')
+let vis = new Visualizer(canvas)
 
 // run intro animation
-const introDiv = document.querySelector('#introAnimation')
+let introDiv = document.querySelector('#introAnimation')
 
 introDiv.querySelector('#GO').onclick = () => {
 	// show canvas and controls
@@ -22,13 +22,18 @@ introAnimation(introDiv)
 
 // GUI controls --------------------------------------------------------
 
-const inputSel = document.querySelector('#input')
-const timeTypeSel = document.querySelector('#timeType')
-const freqTypeSel = document.querySelector('#freqType')
-const calcNote = document.querySelector('#calculateNote')
+let inputSel = document.querySelector('#input')
+let timeTypeSel = document.querySelector('#timeType')
+let freqTypeSel = document.querySelector('#freqType')
+let calcNote = document.querySelector('#calculateNote')
 calcNote.checked = false // initially uncheck this option
-const curFreq = document.querySelector('#curFreq')
-const toggleMenu = document.querySelector('#toggleMenu')
+let curFreq = document.querySelector('#curFreq')
+let toggleMenu = document.querySelector('#toggleMenu')
+
+// set default selected values
+// FIX for Firefox only because of bizarre select option behavior
+inputSel.value = 'time'
+timeTypeSel.value = 'triRadial'
 
 inputSel.onchange = function() {
 	vis.input = this.value
@@ -328,22 +333,22 @@ function Visualizer(canvas) {
 		let lastItem = 0
 		data.forEach((item, i) => {
 			if (item > 128 &&  lastItem <= 128) {
-				const elapsedSteps = i - lastPos
+				let elapsedSteps = i - lastPos
 				lastPos = i
 
-				const hertz = 1 / (elapsedSteps / 44100)
+				let hertz = 1 / (elapsedSteps / 44100)
 				pitchSamples.push(hertz)
 			}
 
 			lastItem = item
 		})
 		pitchSamples.shift() //remove first sample because it is often an huge outlier
-		const estimatedFrequency = Util.average(pitchSamples)
+		let estimatedFrequency = Util.average(pitchSamples)
 		if (this.doEstimateNote) { //estimate musical note of frequency if specified
-			const estimatedNote = noteName(estimatedFrequency)
+			let estimatedNote = noteName(estimatedFrequency)
 			history.push(estimatedNote)
 			//console.log('Est: ' + estimatedNote)
-			const historicMode = history.mode()
+			let historicMode = history.mode()
 			//console.log('Mode of history: ' + historicMode)
 			document.querySelector('#curFreq').innerHTML = 'Estimated note: ' + historicMode
 			return {
