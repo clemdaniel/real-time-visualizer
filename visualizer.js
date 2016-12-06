@@ -1,10 +1,10 @@
 // initialize
-let canvas = document.querySelector('.visualizer')
-let toolbar = document.querySelector('#toolbar')
-let vis = new Visualizer(canvas)
+const canvas = document.querySelector('.visualizer')
+const toolbar = document.querySelector('#toolbar')
+const vis = new Visualizer(canvas)
 
 // run intro animation
-let introDiv = document.querySelector('#introAnimation')
+const introDiv = document.querySelector('#introAnimation')
 
 introDiv.querySelector('#GO').onclick = () => {
 	// show canvas and controls
@@ -22,13 +22,13 @@ introAnimation(introDiv)
 
 // GUI controls --------------------------------------------------------
 
-let inputSel = document.querySelector('#input')
-let timeTypeSel = document.querySelector('#timeType')
-let freqTypeSel = document.querySelector('#freqType')
-let calcNote = document.querySelector('#calculateNote')
+const inputSel = document.querySelector('#input')
+const timeTypeSel = document.querySelector('#timeType')
+const freqTypeSel = document.querySelector('#freqType')
+const calcNote = document.querySelector('#calculateNote')
 calcNote.checked = false // initially uncheck this option
-let curFreq = document.querySelector('#curFreq')
-let toggleMenu = document.querySelector('#toggleMenu')
+const curFreq = document.querySelector('#curFreq')
+const toggleMenu = document.querySelector('#toggleMenu')
 
 // set default selected values
 // FIX for Firefox only because of bizarre select option behavior
@@ -333,22 +333,22 @@ function Visualizer(canvas) {
 		let lastItem = 0
 		data.forEach((item, i) => {
 			if (item > 128 &&  lastItem <= 128) {
-				let elapsedSteps = i - lastPos
+				const elapsedSteps = i - lastPos
 				lastPos = i
 
-				let hertz = 1 / (elapsedSteps / 44100)
+				const hertz = 1 / (elapsedSteps / 44100)
 				pitchSamples.push(hertz)
 			}
 
 			lastItem = item
 		})
 		pitchSamples.shift() //remove first sample because it is often an huge outlier
-		let estimatedFrequency = Util.average(pitchSamples)
+		const estimatedFrequency = Util.average(pitchSamples)
 		if (this.doEstimateNote) { //estimate musical note of frequency if specified
-			let estimatedNote = noteName(estimatedFrequency)
+			const estimatedNote = noteName(estimatedFrequency)
 			history.push(estimatedNote)
 			//console.log('Est: ' + estimatedNote)
-			let historicMode = history.mode()
+			const historicMode = history.mode()
 			//console.log('Mode of history: ' + historicMode)
 			document.querySelector('#curFreq').innerHTML = 'Estimated note: ' + historicMode
 			return {
