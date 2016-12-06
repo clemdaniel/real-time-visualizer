@@ -1,10 +1,27 @@
 // initialize
 const canvas = document.querySelector('.visualizer')
+const toolbar = document.querySelector('#toolbar')
 const vis = new Visualizer(canvas)
-vis.start()
+
+// run intro animation
+const introDiv = document.querySelector('#introAnimation')
+
+introDiv.querySelector('#GO').onclick = () => {
+	// show canvas and controls
+	canvas.style.display = 'block'
+	toolbar.style.display = 'block'
+	// hide intro overlay
+	introDiv.style.display = 'none'
+	// initialize visualizer
+	vis.start()
+}
+introAnimation(introDiv)
+
+
+
 
 // GUI controls --------------------------------------------------------
-const toolbar = document.querySelector('#toolbar')
+
 const inputSel = document.querySelector('#input')
 const timeTypeSel = document.querySelector('#timeType')
 const freqTypeSel = document.querySelector('#freqType')
@@ -74,8 +91,8 @@ window.addEventListener('resize', function() {
 
 // Visualizer function
 function Visualizer(canvas) {
-	this.input = 'frequency'
-	this.type = 'simple'
+	this.input = 'time'
+	this.type = 'triRadial'
 	let analyser, ctx, activeFrame, dimensionResetTimeout
 	let status = 'stopped'
 	let history = new MovingAverage(20)
@@ -402,4 +419,20 @@ let Util = {
 		}
 		return max
 	}
+}
+
+function introAnimation(div) {
+	let span = div.querySelector('span')
+	let go = div.querySelector('#GO')
+	setTimeout(() => {
+		span.style.color = '#111'
+		setTimeout(() => {
+			span.style.color = '#f0f0f0'
+			span.innerHTML = 'See the sound and hear the colors.'
+			//show button
+			setTimeout(() => {
+				go.style.display = 'block'
+			}, 1500)
+		}, 1500)
+	}, 9000)
 }

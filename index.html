@@ -11,13 +11,25 @@
 	
 </head>
 <body>
-	<canvas class="visualizer" width="640" height="256"></canvas> 
+	<div id="introAnimation">
+		<span>
+			synesthesia<br />
+			[sin-uh s-thee-zhuh, -zhee-uh, -zee-uh] <br />
+			noun <br/>
+			1. a sensation produced in one modality when a stimulus<br />
+			is applied to another modality, <br/>
+			as when the hearing of a certain sound <br/>
+			induces the visualization of a certain color. <br />
+ 		</span>
+		<button id="GO" style="display:none">GO</button>
+	</div>
+	<canvas class="visualizer" style="display:none" width="640" height="256"></canvas> 
 
-	<div id="toolbar">
+	<div id="toolbar" style="display:none">
 		<div class="wrapper">
 			<select id="input">
-				<option value="time">Time</option>
-				<option value="frequency" selected>Frequency</option>
+				<option value="time" selected>Time</option>
+				<option value="frequency">Frequency</option>
 				<option value="off">Off</option>
 			</select>
 			<select id="timeType" style="display:none">
@@ -28,12 +40,12 @@
 				<option value="triVertical">TriVertical</option>
 				<option value="diagonalAmplitudeGradient">Diagonal Gradient</option>
 				<option value="radialAmplitudeGradient">Radial Gradient</option>
-				<option value="triRadial">TriRadial</option>
+				<option value="triRadial" selected>TriRadial</option>
 			</select>
 			<select id="freqType">
 				<option value="simple">Simple</option>
 			</select>
-			<label><input type="checkbox" id="calculateNote" disabled=true>Estimate Musical Note</label>
+			<label><input type="checkbox" id="calculateNote">Estimate Musical Note</label>
 		</div>
 		<div id="toggleMenu"><i class="material-icons">keyboard_arrow_left</i></div>
 	</div>

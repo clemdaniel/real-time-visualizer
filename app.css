@@ -5,6 +5,37 @@ body {
 	overflow: hidden;
 }
 
+/* Intro animation */
+#introAnimation {
+	height: 100vh;
+	width: 100vw;
+	background: #111;
+	display: flex;
+	flex-flow: column;
+	align-items: center;
+	justify-content: center;
+	/* safari and opera */ 
+	display: -webkit-flex;
+	-webkit-flex-flow: column;
+	-webkit-align-items: center;
+	-webkit-justify-content: center;
+}
+
+#introAnimation > * {
+	color: #f0f0f0;
+	transition: color 2s ease;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 4vh;
+}
+
+#GO {
+	background: #1E90FF;
+	box-shadow: 0px 0px 1px 1px #f0f0f0;
+	border: 1px solid #1E90FF;
+	border-radius: 2px;
+	width: 150px;
+}
+
 /* Toolbar for menu controls */
 #toolbar {
 	position: absolute;
