@@ -12,6 +12,8 @@ introDiv.querySelector('#GO').onclick = () => {
 	toolbar.style.display = 'block'
 	// hide intro overlay
 	introDiv.style.display = 'none'
+	// resume audio context to satisfy chrome
+	vis.audioContext.resume()
 	// initialize visualizer
 	vis.start()
 }
@@ -109,6 +111,7 @@ function Visualizer(canvas) {
 	this.type = 'triRadial'
 	this.upperThreshold = '1600'
 	this.lowerThreshold = '700'
+	this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
 	let analyser, ctx, activeFrame, dimensionResetTimeout
 	let status = 'stopped'
 	let history = new MovingAverage(20)
@@ -156,8 +159,8 @@ function Visualizer(canvas) {
 						  navigator.mozGetUserMedia ||
 						  navigator.msGetUserMedia)
 
-		let audioCtx = new (window.AudioContext || window.webkitAudioContext)()
 		//initalize analyser, set params TODO consider allowing these to be set externally
+		let audioCtx = this.audioContext
 		analyser = audioCtx.createAnalyser()
 		analyser.minDecibels = -90
 		analyser.maxDecibels = -10
